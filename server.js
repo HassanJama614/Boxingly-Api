@@ -43,9 +43,16 @@ app.use(cors({
 // ==========================================================
 
 
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+const port = process.env.PORT || 5001;
+const hostname = '127.0.0.1';
+
+app.get('/', (req, res) => {
+    res.send('Welcome to the Boxing Academy API');
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on http://${hostname}:${port}`);
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
 });
 
 
