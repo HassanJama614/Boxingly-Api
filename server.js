@@ -17,9 +17,9 @@ connectDB();
 const app = express();
 
 const allowedOrigins = [
-    'http://localhost:3000', // Your main site local dev
-    'http://localhost:3001', // Your staff dashboard local dev
-    // === ADD YOUR DEPLOYED FRONTEND URL(S) HERE ===
+     'https://boxing-website-ten.vercel.app/', // Main Boxingly User App (Production)
+    'http://localhost:3000', // Main Boxingly User App
+    'http://localhost:3001', // Staff Dashboard (Local Development)
     'https://boxing-website-l2i05t4ex-hassanjama614s-projects.vercel.app',
     'https://your-staff-dashboard.vercel.app' // Add the staff dashboard URL here too when you deploy it
 ];
