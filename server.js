@@ -25,38 +25,30 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
-        if (!origin) return callback(null, true);
-        // Check if the incoming origin is in our allowed list
-        if (allowedOrigins.indexOf(origin) === -1) {
-            const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-            return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-    },
-    credentials: true // Important for sending/receiving cookies or auth headers
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked for origin: ${origin}`), false);
+  },
+  credentials: true
 }));
 
-// ==========================================================
-// === REMOVE OR COMMENT OUT THE app.listen() BLOCK BELOW ===
-// ==========================================================
+app.use(express.json());
+app.use(passport.initialize());
 
-
-const port = process.env.PORT || 5001;
-const hostname = '127.0.0.1';
+// Your routes
+app.use('/api/auth', authRoutes);
+app.use('/api/classes', classRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/instructor-applications', instructorApplicationRoutes);
 
 app.get('/', (req, res) => {
-    res.send('Welcome to the Boxing Academy API');
+  res.send('Welcome to the Boxing Academy API');
 });
 
+const port = process.env.PORT || 5001;
 app.listen(port, () => {
-    console.log(`Server is running on http://${hostname}:${port}`);
-    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
 
-
-// ====================================================
-// === ADD THIS LINE TO EXPORT THE APP FOR VERCEL ===
-// ====================================================
 module.exports = app;
