@@ -17,11 +17,11 @@ connectDB();
 const app = express();
 
 const allowedOrigins = [
-     'https://boxing-website-ten.vercel.app/', // Main Boxingly User App (Production)
-    'http://localhost:3000', // Main Boxingly User App
-    'http://localhost:3001', // Staff Dashboard (Local Development)
-    'https://boxing-website-l2i05t4ex-hassanjama614s-projects.vercel.app',
-    'https://your-staff-dashboard.vercel.app' // Add the staff dashboard URL here too when you deploy it
+  'https://boxing-website-ten.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://boxing-website-l2i05t4ex-hassanjama614s-projects.vercel.app',
+  'https://your-staff-dashboard.vercel.app'
 ];
 
 app.use(cors({
