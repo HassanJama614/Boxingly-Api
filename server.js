@@ -29,9 +29,10 @@ const app = express(); // NOW YOU CAN INITIALIZE THE APP
 
 // OPTION B: Specific Origins (Your previous setup, let's ensure it's robust)
 const allowedOrigins = [
-    'https://boxing-website-ten.vercel.app/', // Main Boxingly User App (Production)
+    'https://boxing-website-ten.vercel.app', // Main Boxingly User App (Production)
     'http://localhost:3000', // Main Boxingly User App
-    'http://localhost:3001'  // Staff Dashboard App
+    'http://localhost:3001',  // Staff Dashboard App
+    'https://boxingly-api.onrender.com/api'
 ];
 
 app.use(cors({
