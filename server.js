@@ -1,64 +1,66 @@
 // server/server.js
-const express = require('express'); // IMPORT EXPRESS FIRST
+
+// Load environment variables from .env file FIRST
 const dotenv = require('dotenv');
+dotenv.config();
+
+// Core module imports
+const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
-const connectDB = require('./config/db');
 
-// Route Files (can come after core requires)
+// Local module imports
+const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const classRoutes = require('./routes/classRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const instructorApplicationRoutes = require('./routes/instructorApplicationRoutes');
 
-// Initialize passport configuration
+// Initialize passport configuration (runs the code in the file)
 require('./config/passport-setup');
 
-dotenv.config(); // Load environment variables
-connectDB();     // Connect to MongoDB
+// Connect to MongoDB
+connectDB();
 
-const app = express(); // NOW YOU CAN INITIALIZE THE APP
-
-// --- CORS Middleware Configuration ---
-// ... (rest of your server.js code)
+// Initialize Express App
+const app = express();
 
 // --- CORS Middleware Configuration ---
-// OPTION A: Simplest possible for debugging - allow ALL origins temporarily
-// console.log("Applying very permissive CORS for debugging...");
-// app.use(cors({ credentials: true })); // This allows all origins if no origin option is specified
-
-// OPTION B: Specific Origins (Your previous setup, let's ensure it's robust)
 const allowedOrigins = [
-    'https://boxing-website-ten.vercel.app', // Main Boxingly User App (Production)
-    'http://localhost:3000', // Main Boxingly User App
-    'http://localhost:3001',  // Staff Dashboard App
-    'https://boxingly-api.onrender.com/api'
+    'https://boxing-website-ten.vercel.app', // Your Main Site on Vercel
+    // Add your Staff Dashboard URL here when it's deployed
+    // e.g., 'https://staff-dashboard-xyz.vercel.app',
+    'http://localhost:3000', // For local development of your main site
+    'http://localhost:3001'  // For local development of your staff dashboard
 ];
 
 app.use(cors({
     origin: function (requestOrigin, callback) {
-        console.log("CORS Check: Request Origin ->", requestOrigin); // LOG THE INCOMING ORIGIN
-        if (!requestOrigin || allowedOrigins.indexOf(requestOrigin) !== -1) {
+        // Log the incoming origin for debugging
+        console.log("CORS Check: Request from Origin ->", requestOrigin);
+
+        // Allow requests with no origin (like Postman/Insomnia, mobile apps, or server-to-server)
+        if (!requestOrigin) return callback(null, true);
+
+        // Check if the incoming origin is in our allowed list
+        if (allowedOrigins.indexOf(requestOrigin) !== -1) {
             console.log("CORS Check: Origin ALLOWED.");
             callback(null, true);
         } else {
             console.error('CORS Check: Origin DENIED ->', requestOrigin);
-            callback(new Error('Not allowed by CORS'));
+            // In production, you might want to log this but not necessarily crash the request
+            callback(new Error('This origin is not allowed by CORS policy.'));
         }
     },
-    credentials: true
+    credentials: true // Important for passing tokens/cookies
 }));
 
 // --- Body Parser Middleware ---
-// To parse JSON request bodies
-app.use(express.json());
-// To parse URL-encoded request bodies (e.g., from HTML forms, though less common for APIs)
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json()); // To parse JSON request bodies
+app.use(express.urlencoded({ extended: false })); // To parse URL-encoded bodies
 
-// --- Passport Middleware (for authentication strategies like Google OAuth) ---
+// --- Passport Middleware ---
 app.use(passport.initialize());
-// If you were using session-based authentication with Passport (not just JWTs from Google strategy),
-// you would also include: app.use(passport.session());
 
 // --- Mount API Routers ---
 app.use('/api/auth', authRoutes);
@@ -66,23 +68,22 @@ app.use('/api/classes', classRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/instructor-applications', instructorApplicationRoutes);
 
-// --- Simple Base Route for API (Optional: good for health checks) ---
+// --- Simple Base Route for API Health Check ---
 app.get('/', (req, res) => {
-    res.send('Boxingly API is up and running!');
+    res.send('Boxingly API is alive and running!');
 });
 
-// --- Error Handling Middleware (Optional but Recommended) ---
-// Example: A simple catch-all for unhandled errors
+// --- Simple Error Handling Middleware (Catches errors from routes) ---
 app.use((err, req, res, next) => {
-    console.error("Unhandled Error:", err.stack);
-    res.status(500).send('Something broke on the server!');
+    console.error("Unhandled Error Caught:", err.stack);
+    res.status(500).json({ message: 'Something broke on the server!', error: err.message });
 });
 
-
-// --- Define Port and Start Listening ---
+// --- Define Port and Start Listening (Optimized for Render) ---
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
+// Render requires binding to host '0.0.0.0'
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
     // The "MongoDB Connected..." message comes from your connectDB function in db.js
 });
