@@ -16,7 +16,7 @@ const classRoutes = require('./routes/classRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const instructorApplicationRoutes = require('./routes/instructorApplicationRoutes');
 
-// Initialize passport configuration (runs the code in the file)
+// Initialize passport configuration
 require('./config/passport-setup');
 
 // Connect to MongoDB
@@ -27,11 +27,13 @@ const app = express();
 
 // --- CORS Middleware Configuration ---
 const allowedOrigins = [
-    'https://boxing-website-ten.vercel.app', // Your Main Site on Vercel
-    // Add your Staff Dashboard URL here when it's deployed
-     'https://dashboard-alpha-weld-61.vercel.app'
+    // Production Frontend Domains
+    'https://boxing-website-1zpq8c4ql-hassanjama614s-projects.vercel.app', // <<<--- ADDED YOUR MAIN SITE
+    'https://dashboard-r13ihnohh-hassanjama614s-projects.vercel.app',    // <<<--- ADDED YOUR STAFF DASHBOARD
 
-  // For local development of your staff dashboard
+    // Local Development Domains
+    'http://localhost:3000',
+    'http://localhost:3001'
 ];
 
 app.use(cors({
@@ -39,8 +41,8 @@ app.use(cors({
         // Log the incoming origin for debugging
         console.log("CORS Check: Request from Origin ->", requestOrigin);
 
-        // Allow requests with no origin (like Postman/Insomnia, mobile apps, or server-to-server)
-        if (!requestOrigin) return callback(null, true);
+        // Allow requests with no origin (like Postman/Insomnia, mobile apps)
+        if (!origin) return callback(null, true);
 
         // Check if the incoming origin is in our allowed list
         if (allowedOrigins.indexOf(requestOrigin) !== -1) {
@@ -48,16 +50,15 @@ app.use(cors({
             callback(null, true);
         } else {
             console.error('CORS Check: Origin DENIED ->', requestOrigin);
-            // In production, you might want to log this but not necessarily crash the request
             callback(new Error('This origin is not allowed by CORS policy.'));
         }
     },
-    credentials: true // Important for passing tokens/cookies
+    credentials: true
 }));
 
 // --- Body Parser Middleware ---
-app.use(express.json()); // To parse JSON request bodies
-app.use(express.urlencoded({ extended: false })); // To parse URL-encoded bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // --- Passport Middleware ---
 app.use(passport.initialize());
@@ -73,7 +74,7 @@ app.get('/', (req, res) => {
     res.send('Boxingly API is alive and running!');
 });
 
-// --- Simple Error Handling Middleware (Catches errors from routes) ---
+// --- Simple Error Handling Middleware ---
 app.use((err, req, res, next) => {
     console.error("Unhandled Error Caught:", err.stack);
     res.status(500).json({ message: 'Something broke on the server!', error: err.message });
@@ -85,5 +86,4 @@ const PORT = process.env.PORT || 5001;
 // Render requires binding to host '0.0.0.0'
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-    // The "MongoDB Connected..." message comes from your connectDB function in db.js
 });
