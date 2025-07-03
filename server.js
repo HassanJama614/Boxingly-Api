@@ -1,49 +1,33 @@
-// server/server.js
+// server/server.js -> CORS Configuration Section
 
-const dotenv = require('dotenv');
-dotenv.config();
-
-const express = require('express');
-const cors = require('cors');
-const passport = require('passport');
-const connectDB = require('./config/db');
-
-// Route Files
-const authRoutes = require('./routes/authRoutes');
-const classRoutes = require('./routes/classRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const instructorApplicationRoutes = require('./routes/instructorApplicationRoutes');
-
-// Initialize passport config
-require('./config/passport-setup');
-
-// Connect to DB
-connectDB();
-
-const app = express();
-
-// --- NEW, SIMPLIFIED CORS CONFIGURATION ---
 const allowedOrigins = [
-    'https://boxing-website-1zpq8c4ql-hassanjama614s-projects.vercel.app', // Main Site
-    'https://dashboard-r13ihnohh-hassanjama614s-projects.vercel.app',    // Staff Dashboard
+    // Production Frontend Domains
+    'https://boxing-website-ten.vercel.app', // Your Main Site (from previous errors)
+    'https://dashboard-alpha-weld-61.vercel.app',    // <<< YOUR NEW STAFF DASHBOARD URL
+
+    // Local Development Domains
     'http://localhost:3000',
     'http://localhost:3001'
 ];
 
 const corsOptions = {
-    origin: allowedOrigins,
-    credentials: true, // Allow cookies/authorization headers
-    optionsSuccessStatus: 200 // For legacy browser compatibility with OPTIONS
+    origin: function (requestOrigin, callback) {
+        console.log("CORS Check: Request from Origin ->", requestOrigin); // For debugging on Render logs
+        // Allow requests with no origin OR if origin is in the allowed list
+        if (!requestOrigin || allowedOrigins.indexOf(requestOrigin) !== -1) {
+            console.log("CORS Check: Origin ALLOWED.");
+            callback(null, true);
+        } else {
+            console.error('CORS Check: Origin DENIED ->', requestOrigin);
+            callback(new Error('This origin is not allowed by CORS policy.'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200 // For legacy browser compatibility
 };
 
-// Use the CORS middleware with these options
 app.use(cors(corsOptions));
-
-// Some frameworks/proxies send OPTIONS requests before POST/PUT/DELETE.
-// This handles those preflight requests explicitly, ensuring they pass.
-app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
-
-// --- END CORS CONFIGURATION ---
+app.options('*', cors(corsOptions)); // Handle preflight requests for all routes
 
 
 // Body Parser Middleware
