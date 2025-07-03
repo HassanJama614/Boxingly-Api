@@ -6,10 +6,11 @@ const {
     loginUser,
     getUserProfile,
     googleAuthCallback,
-    updateUserProfile // Make sure this is imported
+    updateUserProfile
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
-const router = express.Router();
+
+const router = express.Router(); // <<< THIS WAS MISSING from the start of your auth routes block
 
 // Traditional Authentication
 router.post('/register', registerUser);
@@ -21,19 +22,18 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 router.get(
     '/google/callback',
     passport.authenticate('google', {
-        // successRedirect: 'http://localhost:3000/', // Or let the controller handle the response
-        failureRedirect: 'http://localhost:3000/signin?error=google_auth_failed', // Redirect to frontend signin page on failure
-        session: false // Using JWT, so no session needed from passport
+        failureRedirect: 'http://localhost:3000/signin?error=google_auth_failed',
+        session: false
     }),
-    googleAuthCallback // Controller handles sending token to frontend
+    googleAuthCallback
 );
 
 // User Profile Routes
 router.route('/profile')
-    .get(protect, getUserProfile)      // GET to fetch current user's profile
-    .put(protect, updateUserProfile);   // PUT to update current user's profile
+    .get(protect, getUserProfile)
+    .put(protect, updateUserProfile);
 
-// Route for frontend to know if login failed via Google (if not using query params on main redirect)
+// Route for frontend to know if login failed via Google
 router.get('/login/failed', (req, res) => {
     res.status(401).json({
       success: false,
