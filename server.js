@@ -28,8 +28,9 @@ const app = express();
 // --- CORS Middleware Configuration ---
 const allowedOrigins = [
     // Production Frontend Domains
-    'https://boxing-website-1zpq8c4ql-hassanjama614s-projects.vercel.app', // <<<--- ADDED YOUR MAIN SITE
-    'https://dashboard-r13ihnohh-hassanjama614s-projects.vercel.app',    // <<<--- ADDED YOUR STAFF DASHBOARD
+    'https://boxing-website-ten.vercel.app', // Your Main Site Vercel URL
+    'https://dashboard-r13ihnohh-hassanjama614s-projects.vercel.app', // Your Staff Dashboard Vercel URL
+    // Add any other production domains here
 
     // Local Development Domains
     'http://localhost:3000',
@@ -37,12 +38,15 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-    origin: function (requestOrigin, callback) {
-        // Log the incoming origin for debugging
+    origin: function (requestOrigin, callback) { // The argument is named 'requestOrigin'
         console.log("CORS Check: Request from Origin ->", requestOrigin);
 
-        // Allow requests with no origin (like Postman/Insomnia, mobile apps)
-        if (!origin) return callback(null, true);
+        // Allow requests with no origin (like Postman, mobile apps, server-to-server)
+        // Use the correct variable name 'requestOrigin' here.
+        if (!requestOrigin) {
+            console.log("CORS Check: No origin provided. Allowing.");
+            return callback(null, true);
+        }
 
         // Check if the incoming origin is in our allowed list
         if (allowedOrigins.indexOf(requestOrigin) !== -1) {
@@ -77,6 +81,10 @@ app.get('/', (req, res) => {
 // --- Simple Error Handling Middleware ---
 app.use((err, req, res, next) => {
     console.error("Unhandled Error Caught:", err.stack);
+    // If it's the CORS error we just created, send a 403 Forbidden
+    if (err.message === 'This origin is not allowed by CORS policy.') {
+        return res.status(403).json({ message: err.message });
+    }
     res.status(500).json({ message: 'Something broke on the server!', error: err.message });
 });
 
