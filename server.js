@@ -1,97 +1,78 @@
 // server/server.js
 
-// Load environment variables from .env file FIRST
 const dotenv = require('dotenv');
 dotenv.config();
 
-// Core module imports
 const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
-
-// Local module imports
 const connectDB = require('./config/db');
+
+// Route Files
 const authRoutes = require('./routes/authRoutes');
 const classRoutes = require('./routes/classRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const instructorApplicationRoutes = require('./routes/instructorApplicationRoutes');
 
-// Initialize passport configuration
+// Initialize passport config
 require('./config/passport-setup');
 
-// Connect to MongoDB
+// Connect to DB
 connectDB();
 
-// Initialize Express App
 const app = express();
 
-// --- CORS Middleware Configuration ---
+// --- NEW, SIMPLIFIED CORS CONFIGURATION ---
 const allowedOrigins = [
-    // Production Frontend Domains
-    'https://boxing-website-ten.vercel.app', // Your Main Site Vercel URL
-    'https://dashboard-r13ihnohh-hassanjama614s-projects.vercel.app', // Your Staff Dashboard Vercel URL
-    // Add any other production domains here
-
-    // Local Development Domains
+    'https://boxing-website-1zpq8c4ql-hassanjama614s-projects.vercel.app', // Main Site
+    'https://dashboard-r13ihnohh-hassanjama614s-projects.vercel.app',    // Staff Dashboard
     'http://localhost:3000',
     'http://localhost:3001'
 ];
 
-app.use(cors({
-    origin: function (requestOrigin, callback) { // The argument is named 'requestOrigin'
-        console.log("CORS Check: Request from Origin ->", requestOrigin);
+const corsOptions = {
+    origin: allowedOrigins,
+    credentials: true, // Allow cookies/authorization headers
+    optionsSuccessStatus: 200 // For legacy browser compatibility with OPTIONS
+};
 
-        // Allow requests with no origin (like Postman, mobile apps, server-to-server)
-        // Use the correct variable name 'requestOrigin' here.
-        if (!requestOrigin) {
-            console.log("CORS Check: No origin provided. Allowing.");
-            return callback(null, true);
-        }
+// Use the CORS middleware with these options
+app.use(cors(corsOptions));
 
-        // Check if the incoming origin is in our allowed list
-        if (allowedOrigins.indexOf(requestOrigin) !== -1) {
-            console.log("CORS Check: Origin ALLOWED.");
-            callback(null, true);
-        } else {
-            console.error('CORS Check: Origin DENIED ->', requestOrigin);
-            callback(new Error('This origin is not allowed by CORS policy.'));
-        }
-    },
-    credentials: true
-}));
+// Some frameworks/proxies send OPTIONS requests before POST/PUT/DELETE.
+// This handles those preflight requests explicitly, ensuring they pass.
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
 
-// --- Body Parser Middleware ---
+// --- END CORS CONFIGURATION ---
+
+
+// Body Parser Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// --- Passport Middleware ---
+// Passport Middleware
 app.use(passport.initialize());
 
-// --- Mount API Routers ---
+// Mount API Routers
 app.use('/api/auth', authRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/instructor-applications', instructorApplicationRoutes);
 
-// --- Simple Base Route for API Health Check ---
+// Base Route for Health Check
 app.get('/', (req, res) => {
     res.send('Boxingly API is alive and running!');
 });
 
-// --- Simple Error Handling Middleware ---
+// Simple Error Handling Middleware
 app.use((err, req, res, next) => {
     console.error("Unhandled Error Caught:", err.stack);
-    // If it's the CORS error we just created, send a 403 Forbidden
-    if (err.message === 'This origin is not allowed by CORS policy.') {
-        return res.status(403).json({ message: err.message });
-    }
     res.status(500).json({ message: 'Something broke on the server!', error: err.message });
 });
 
-// --- Define Port and Start Listening (Optimized for Render) ---
+// Define Port and Start Listening (for Render)
 const PORT = process.env.PORT || 5001;
 
-// Render requires binding to host '0.0.0.0'
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
