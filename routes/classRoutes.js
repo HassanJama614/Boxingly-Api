@@ -1,4 +1,3 @@
-// server/routes/classRoutes.js
 const express = require('express');
 const {
     getPublicClasses,
@@ -13,18 +12,18 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // --- Public Route ---
-router.get('/', getPublicClasses); // GET /api/classes - for anyone to see classes
+router.get('/', getPublicClasses);
 
-// --- Protected Routes for Class Management (Admins, Staff, Instructors) ---
-const manageRouter = express.Router(); // Create a sub-router for /manage path
+// --- Protected Routes for Class Management ---
+const manageRouter = express.Router();
 
 manageRouter.post('/', protect, authorize('admin', 'staff', 'instructor'), createClass);
-manageRouter.get('/my-classes', protect, authorize('instructor', 'admin', 'staff'), getMyClasses); // Instructors see theirs, admin/staff might see all here too or via separate admin route
-manageRouter.get('/:id', protect, getManagedClassById); // Authorization within controller
-manageRouter.put('/:id', protect, updateClass);       // Authorization within controller
-manageRouter.delete('/:id', protect, deleteClass);   // Authorization within controller
+manageRouter.get('/my-classes', protect, authorize('instructor', 'admin', 'staff'), getMyClasses);
+manageRouter.get('/:id', protect, getManagedClassById);
+manageRouter.put('/:id', protect, updateClass);
+manageRouter.delete('/:id', protect, deleteClass);
 
 // Mount the manageRouter under /manage
-router.use('/manage', manageRouter); // All routes in manageRouter will be prefixed with /api/classes/manage
+router.use('/manage', manageRouter);
 
 module.exports = router;

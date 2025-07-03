@@ -1,4 +1,3 @@
-// server/routes/authRoutes.js
 const express = require('express');
 const passport = require('passport');
 const {
@@ -10,7 +9,7 @@ const {
 } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
 
-const router = express.Router(); // <<< THIS WAS MISSING from the start of your auth routes block
+const router = express.Router();
 
 // Traditional Authentication
 router.post('/register', registerUser);
