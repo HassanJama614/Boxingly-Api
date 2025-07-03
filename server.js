@@ -29,9 +29,9 @@ const app = express();
 const allowedOrigins = [
     'https://boxing-website-ten.vercel.app', // Your Main Site on Vercel
     // Add your Staff Dashboard URL here when it's deployed
-    // e.g., 'https://staff-dashboard-xyz.vercel.app',
-    'http://localhost:3000', // For local development of your main site
-    'http://localhost:3001'  // For local development of your staff dashboard
+     'https://dashboard-alpha-weld-61.vercel.app'
+
+  // For local development of your staff dashboard
 ];
 
 app.use(cors({
